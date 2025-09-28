@@ -1,0 +1,16 @@
+requests
+django
+djangorestframework
+django-cors-headers
+python-decouple
+djangorestframework-simplejwt
+drf-yasg
+django_redis
+gunicorn
+whitenoise
+firebase_admin
+logtail-python
+pandas
+openpyxl
+uvicorn
+mysqlclient
