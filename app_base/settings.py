@@ -79,6 +79,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app_base.wsgi.application'
 
+SITE_ID = 1
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -150,6 +151,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -233,3 +238,5 @@ EMAIL_PORT = config("EMAIL_PORT")
 EMAIL_USE_TLS = True  
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+
+APP_DOMAIN = config("APP_DOMAIN")
