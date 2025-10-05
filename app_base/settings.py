@@ -212,11 +212,6 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
     'handlers': {
-        'logtail': {
-            'class': 'logtail.LogtailHandler',
-            'source_token': config("BETTERSTACK_LOG_TOKEN"),
-            'host': config("BETTERSTACK_LOG_HOST"),
-        },
         "console": {
             "class": "logging.StreamHandler",
         },
@@ -224,7 +219,6 @@ LOGGING = {
     "loggers": {
         "": {
             "handlers": [
-                # "logtail",
                 "console"
             ],
             "level": "INFO",

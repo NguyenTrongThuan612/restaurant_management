@@ -15,4 +15,4 @@ openpyxl
 uvicorn
 mysqlclient
 Pillow
-psycopg2
+psycopg[binary]
