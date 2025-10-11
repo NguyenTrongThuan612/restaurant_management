@@ -18,12 +18,12 @@ from app_core.serializers.user import ChangePasswordSerializer, UpdateUserSerial
 from app_core.helpers.paginator import CustomPageNumberPagination
 
 class UserView(viewsets.ViewSet):
-    # authentication_classes = (UserAuthentication, )
+    authentication_classes = (UserAuthentication, )
 
-    # def get_permissions(self):
-    #     if self.action in ['list', 'retrieve', 'create']:
-    #         return [IsManager()]
-    #     return []
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'create']:
+            return [IsManager()]
+        return []
 
     @swagger_auto_schema(request_body=CreateUserSerializer)
     def create(self, request):
