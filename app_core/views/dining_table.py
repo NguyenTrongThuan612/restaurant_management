@@ -77,7 +77,9 @@ class DiningTableView(viewsets.ViewSet):
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
 
             obj = DiningTable.objects.get(pk=pk, deleted_at=None)
-            obj.update(**serializer.validated_data)
+            for key, value in serializer.validated_data.items():
+                setattr(obj, key, value)
+            obj.save()
             return RestResponse(status=status.HTTP_200_OK, data=DiningTableSerializer(obj).data).response
         except DiningTable.DoesNotExist:
             return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy bàn ăn!").response

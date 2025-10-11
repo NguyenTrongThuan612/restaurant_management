@@ -80,7 +80,9 @@ class DishView(viewsets.ViewSet):
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
 
             obj = Dish.objects.get(pk=pk, deleted_at=None)
-            obj.update(**serializer.validated_data)
+            for key, value in serializer.validated_data.items():
+                setattr(obj, key, value)
+            obj.save()
             return RestResponse(status=status.HTTP_200_OK, data=DishSerializer(obj).data).response
         except Dish.DoesNotExist:
             return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy món ăn!").response
