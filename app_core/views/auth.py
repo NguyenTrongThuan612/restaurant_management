@@ -36,7 +36,7 @@ class AuthView(viewsets.ViewSet, TokenObtainPairView):
             return RestResponse(message="Dữ liệu đầu vào không hợp lệ!", status=status.HTTP_400_BAD_REQUEST).response
         
         except UnVerifiedException as _:
-            _email = request.data["employee_code"]
+            _email = request.data["email"]
             _otp = generate_otp(6, "verify_account", _email)
             self.__send_otp_mail(_email, _otp)
             return RestResponse(message="Tài khoản chưa được xác thực", code="account_unverify", status=status.HTTP_400_BAD_REQUEST).response
