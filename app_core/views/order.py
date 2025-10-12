@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from django.db import transaction
 from rest_framework import viewsets, status
 from drf_yasg import openapi
@@ -7,12 +6,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 
 from app_core.middlewares.authentication import UserAuthentication
+from app_core.models.user import User
 from app_core.serializers.order import (
     OrderSerializer, 
     UpdateOrderSerializer, 
     CreateOrderSerializer, 
-    CreateOrderItemSerializer, 
-    UpdateOrderItemSerializer
 )
 from app_core.models.order import Order, OrderStatus
 from app_core.models.order_item import OrderItem
@@ -89,12 +87,17 @@ class OrderView(viewsets.ViewSet):
             serializer = CreateOrderSerializer(data=request.data)
             if not serializer.is_valid():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
-            with transaction.atomic():
-                order = Order(**serializer.validated_data)
-                order.save()
+            
+            order_items_data = serializer.validated_data.pop('order_items', [])
 
-                for item in serializer.validated_data['order_items']:
-                    OrderItem(**item, order=order).save()
+            with transaction.atomic():
+                order = Order.objects.create(
+                    employee=User.objects.get(id=2),
+                    status=OrderStatus.PENDING,
+                    **serializer.validated_data
+                )
+                items = [OrderItem(order=order, **item) for item in order_items_data]
+                OrderItem.objects.bulk_create(items)
 
             return RestResponse(status=status.HTTP_200_OK, data=OrderSerializer(order).data).response
         except Exception as e:
@@ -137,81 +140,4 @@ class OrderView(viewsets.ViewSet):
             return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy đơn đặt bàn!").response
         except Exception as e:
             logging.getLogger().exception("OrderView.cancel exc=%s, pk=%s", e, pk)
-            return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response
-
-    @action(detail=True, methods=['DELETE'], url_path='order-items/(?P<pk_order_item>\d+)')
-    def delete_order_item(self, request, pk=None, pk_order_item=None):
-        try:
-            logging.getLogger().info("OrderView.delete_order_item pk=%s, pk_order_item=%s", pk, pk_order_item)
-            order = Order.objects.get(pk=pk)
-
-            if order.status != OrderStatus.PENDING:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Không thể xóa sản phẩm khỏi đơn đặt bàn đã hoàn thành!").response
-
-            queryset = OrderItem.objects.get(pk=pk_order_item, deleted_at=None)
-
-            if queryset.order.id != order.id:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Sản phẩm không thuộc đơn đặt bàn!").response
-
-            queryset.deleted_at = datetime.now()
-            queryset.save()
-            return RestResponse(status=status.HTTP_200_OK).response
-        except Order.DoesNotExist:
-            return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy đơn đặt bàn!").response
-        except OrderItem.DoesNotExist:
-            return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy sản phẩm!").response
-        except Exception as e:
-            logging.getLogger().exception("OrderView.delete_order_item exc=%s, pk=%s, pk_order_item=%s", e, pk, pk_order_item)
-            return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response
-
-    @action(detail=True, methods=['POST'], url_path='order-items')
-    def add_order_item(self, request, pk=None):
-        try:
-            logging.getLogger().info("OrderView.add_order_item pk=%s, req=%s", pk, request.data)
-            serializer = CreateOrderItemSerializer(data=request.data)
-            if not serializer.is_valid():
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
-
-            order = Order.objects.get(pk=pk)
-            if order.status != OrderStatus.PENDING:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Không thể thêm sản phẩm vào đơn đặt bàn đã hoàn thành!").response
-
-            OrderItem.objects.create(
-                order=order,
-                **serializer.validated_data
-            )
-            return RestResponse(status=status.HTTP_200_OK).response
-        except Order.DoesNotExist:
-            return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy đơn đặt bàn!").response
-        except Exception as e:
-            logging.getLogger().exception("OrderView.add_order_item exc=%s, pk=%s, req=%s", e, pk, request.data)
-            return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response
-
-    @swagger_auto_schema(request_body=UpdateOrderItemSerializer)
-    @action(detail=True, methods=['PUT'], url_path='order-items/(?P<pk_order_item>\d+)')
-    def update_order_item(self, request, pk=None, pk_order_item=None):
-        try:
-            logging.getLogger().info("OrderView.update_order_item pk=%s, pk_order_item=%s", pk, pk_order_item)
-            serializer = UpdateOrderItemSerializer(data=request.data)
-            if not serializer.is_valid():
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
-
-            order = Order.objects.get(pk=pk)
-            if order.status != OrderStatus.PENDING:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Không thể cập nhật sản phẩm của đơn đặt bàn đã hoàn thành!").response
-
-            queryset = OrderItem.objects.get(pk=pk_order_item, deleted_at=None)
-            if queryset.order.id != order.id:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Sản phẩm không thuộc đơn đặt bàn!").response
-
-            for key, value in serializer.validated_data.items():
-                setattr(queryset, key, value)
-            queryset.save()
-            return RestResponse(status=status.HTTP_200_OK).response
-        except Order.DoesNotExist:
-            return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy đơn đặt bàn!").response
-        except OrderItem.DoesNotExist:
-            return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy sản phẩm!").response
-        except Exception as e:
-            logging.getLogger().exception("OrderView.update_order_item exc=%s, pk=%s, pk_order_item=%s", e, pk, pk_order_item)
             return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response

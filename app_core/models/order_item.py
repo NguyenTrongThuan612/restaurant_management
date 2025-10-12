@@ -38,5 +38,5 @@ class OrderItem(models.Model):
             raise ValidationError("OrderItem type 'combo' requires a combo.")
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.clean()
         super().save(*args, **kwargs)
