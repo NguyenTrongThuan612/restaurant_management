@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from app_core.models.dish import Dish, DishStatus
+from app_core.models.dish import Dish, DishStatus, DishType
 
 class DishSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -17,6 +17,7 @@ class CreateDishSerializer(serializers.Serializer):
     image = serializers.ImageField(required=True)
     price = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
     status = serializers.ChoiceField(required=True, choices=DishStatus.choices)
+    type = serializers.ChoiceField(required=True, choices=DishType.choices)
 
     def validate_price(self, value):
         if value <= 0:
@@ -28,6 +29,7 @@ class UpdateDishSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False)
     price = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
     status = serializers.ChoiceField(required=False, choices=DishStatus.choices)
+    type = serializers.ChoiceField(required=False, choices=DishType.choices)
 
     def validate_price(self, value):
         if value <= 0:
