@@ -20,6 +20,7 @@ class OrderItem(models.Model):
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE, null=True, default=None, related_name="order_items")
     combo = models.ForeignKey(Combo, on_delete=models.CASCADE, null=True, default=None, related_name="order_items")
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
+    note = models.TextField(null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, default=None)

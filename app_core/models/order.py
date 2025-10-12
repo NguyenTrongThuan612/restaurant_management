@@ -19,5 +19,6 @@ class Order(models.Model):
     employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING)
     finished_at = models.DateTimeField(null=True, default=None)
+    note = models.TextField(null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
