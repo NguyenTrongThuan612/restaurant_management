@@ -33,7 +33,7 @@ class CreateOrderItemSerializer(serializers.Serializer):
     dish = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.filter(deleted_at=None, status=DishStatus.SELLING), required=False, allow_null=True)
     combo = serializers.PrimaryKeyRelatedField(queryset=Combo.objects.filter(deleted_at=None), required=False, allow_null=True)
     quantity = serializers.IntegerField(required=True, min_value=1)
-    note = serializers.CharField(required=False)
+    note = serializers.CharField(required=False, allow_blank=True)
 
     def __init__(self, *args, **kwargs):
         existing = set(self.fields.keys())
@@ -54,16 +54,16 @@ class CreateOrderItemSerializer(serializers.Serializer):
 
 class UpdateOrderItemSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(required=False, min_value=1)
-    note = serializers.CharField(required=False)
+    note = serializers.CharField(required=False, allow_blank=True)
 
 class CreateOrderSerializer(serializers.Serializer):
     customer_name = serializers.CharField(required=True)
     customer_phone = serializers.CharField(required=True)
     dining_table = serializers.PrimaryKeyRelatedField(queryset=DiningTable.objects.filter(deleted_at=None), required=True)
     order_items = CreateOrderItemSerializer(many=True, required=True, allow_empty=True, exclude=["order"])
-    note = serializers.CharField(required=False)
+    note = serializers.CharField(required=False, allow_blank=True)
     
 class UpdateOrderSerializer(serializers.Serializer):
     customer_name = serializers.CharField(required=False)
     customer_phone = serializers.CharField(required=False)
-    note = serializers.CharField(required=False)
+    note = serializers.CharField(required=False, allow_blank=True)
