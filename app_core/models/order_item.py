@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 
 from app_core.models.order import Order
 from app_core.models.dish import Dish
@@ -41,3 +42,10 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+    @property
+    def price(self):
+        if self.type == OrderItemType.DISH:
+            return self.dish.price
+        elif self.type == OrderItemType.COMBO:
+            return self.combo.dishes.aggregate(total_price=Sum('price'))['total_price'] - self.combo.discount

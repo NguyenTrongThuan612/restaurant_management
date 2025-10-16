@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from app_core.models.order import Order, OrderStatus
 from app_core.models.order_item import OrderItem, OrderItemType
 from app_core.models.dining_table import DiningTable
@@ -7,6 +6,13 @@ from app_core.models.dish import Dish, DishStatus
 from app_core.models.combo import Combo
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+
+    def get_price(self, obj: OrderItem):
+        if obj.type == OrderItemType.DISH:
+            return obj.dish.price
+        elif obj.type == OrderItemType.COMBO:
+            return obj.combo.price
     class Meta:
         model = OrderItem
         fields = "__all__"
@@ -24,8 +30,8 @@ class OrderSerializer(serializers.ModelSerializer):
 class CreateOrderItemSerializer(serializers.Serializer):
     order = serializers.PrimaryKeyRelatedField(queryset=Order.objects.filter(status=OrderStatus.PENDING), required=True)
     type = serializers.ChoiceField(choices=OrderItemType.choices, required=True)
-    dish = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.filter(deleted_at=None, status=DishStatus.SELLING), required=False)
-    combo = serializers.PrimaryKeyRelatedField(queryset=Combo.objects.filter(deleted_at=None), required=False)
+    dish = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.filter(deleted_at=None, status=DishStatus.SELLING), required=False, allow_null=True)
+    combo = serializers.PrimaryKeyRelatedField(queryset=Combo.objects.filter(deleted_at=None), required=False, allow_null=True)
     quantity = serializers.IntegerField(required=True, min_value=1)
     note = serializers.CharField(required=False)
 
