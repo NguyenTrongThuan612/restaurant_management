@@ -64,7 +64,6 @@ class CreateOrderSerializer(serializers.Serializer):
     dining_table = serializers.PrimaryKeyRelatedField(queryset=DiningTable.objects.filter(deleted_at=None), required=True)
     order_items = CreateOrderItemSerializer(many=True, required=True, allow_empty=True, exclude=["order"])
     note = serializers.CharField(required=False, allow_blank=True)
-    employee = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(status=UserStatus.ACTIVATED), required=False)
     
 class UpdateOrderSerializer(serializers.Serializer):
     customer_name = serializers.CharField(required=False)

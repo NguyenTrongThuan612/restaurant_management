@@ -100,7 +100,7 @@ class OrderView(viewsets.ViewSet):
             with transaction.atomic():
                 order = Order.objects.create(
                     status=OrderStatus.PENDING,
-                    created_by=request.user,
+                    employee=request.user,
                     **serializer.validated_data
                 )
                 items = [OrderItem(order=order, **item) for item in order_items_data]

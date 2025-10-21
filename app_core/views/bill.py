@@ -74,6 +74,9 @@ class BillView(viewsets.ViewSet):
             if order.status != OrderStatus.PENDING:
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Đơn đặt bàn đã được xử lý!").response
 
+            if order.employee != request.user:
+                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Bạn không có quyền tạo hóa đơn cho đơn đặt bàn này!").response
+
             total_amount = sum(item.price * item.quantity for item in order.order_items.all())
             
             with transaction.atomic():
