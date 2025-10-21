@@ -69,10 +69,13 @@ class BillView(viewsets.ViewSet):
             if not serializer.is_valid():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
 
-            order = Order.objects.get(id=serializer.validated_data['order'])
+            order = serializer.validated_data['order']
 
-            if order.status != OrderStatus.PENDING:
-                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Đơn đặt bàn đã được xử lý!").response
+            if order.status == OrderStatus.COMPLETED:
+                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Đơn đặt bàn đã được xử lý trước đó!").response
+
+            if order.status == OrderStatus.CANCELLED:
+                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Đơn đặt bàn đã bị hủy!").response
 
             if order.employee != request.user:
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Bạn không có quyền tạo hóa đơn cho đơn đặt bàn này!").response
