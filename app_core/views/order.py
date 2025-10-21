@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 
 from app_core.middlewares.authentication import UserAuthentication
 from app_core.models.user import User
+from app_core.models.dining_table import DiningTable
 from app_core.serializers.order import (
     OrderSerializer, 
     UpdateOrderSerializer, 
@@ -85,14 +86,20 @@ class OrderView(viewsets.ViewSet):
         try:
             logging.getLogger().info("OrderView.create req=%s", request.data)
             serializer = CreateOrderSerializer(data=request.data)
+
             if not serializer.is_valid():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
             
             order_items_data = serializer.validated_data.pop('order_items', [])
 
+            table = DiningTable.objects.get(id=serializer.validated_data['dining_table'])
+
+            if table.orders.filter(status=OrderStatus.PENDING).exists():
+                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Bàn ăn hiện tại đang được sử dụng!").response
+
             with transaction.atomic():
                 order = Order.objects.create(
-                    employee=User.objects.get(id=2),
+                    employee=request.user,
                     status=OrderStatus.PENDING,
                     **serializer.validated_data
                 )
@@ -113,6 +120,10 @@ class OrderView(viewsets.ViewSet):
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
 
             queryset = Order.objects.get(pk=pk)
+
+            if queryset.status != OrderStatus.PENDING:
+                return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Không thể cập nhật đơn đặt bàn đã hoàn thành!").response
+
             for key, value in serializer.validated_data.items():
                 setattr(queryset, key, value)
             queryset.save()
