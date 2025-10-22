@@ -92,7 +92,7 @@ class OrderView(viewsets.ViewSet):
             
             order_items_data = serializer.validated_data.pop('order_items', [])
 
-            table = DiningTable.objects.get(id=serializer.validated_data['dining_table'])
+            table = serializer.validated_data['dining_table']
 
             if table.orders.filter(status=OrderStatus.PENDING).exists():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Bàn ăn hiện tại đang được sử dụng!").response
