@@ -118,7 +118,7 @@ class ComboView(viewsets.ViewSet):
             if not serializer.is_valid():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
             
-            if obj.dishes.filter(dish=serializer.validated_data['dish'], deleted_at=None).exists():
+            if obj.combo_dishes.filter(dish=serializer.validated_data['dish'], deleted_at=None).exists():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Món ăn đã tồn tại trong combo!").response
 
             ComboDish.objects.create(
@@ -133,7 +133,7 @@ class ComboView(viewsets.ViewSet):
             logging.getLogger().exception("ComboView.add_dish exc=%s, pk=%s, req=%s", e, pk, request.data)
             return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response
 
-    @action(detail=True, methods=['PUT'], parser_classes=(JSONParser, ), url_path='dish/(?P<pk_dish>\d+)')
+    @action(detail=True, methods=['PUT'], parser_classes=(JSONParser, ), url_path=r'dish/(?P<pk_dish>\d+)')
     @swagger_auto_schema(request_body=UpdateDishQuantityInComboSerializer)
     def update_dish(self, request, pk=None, pk_dish=None):
         try:
@@ -144,10 +144,10 @@ class ComboView(viewsets.ViewSet):
             if not serializer.is_valid():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors, message="Vui lòng kiểm tra lại dữ liệu!").response
 
-            if not obj.dishes.filter(dish=pk_dish, deleted_at=None).exists():
+            if not obj.combo_dishes.filter(dish=pk_dish, deleted_at=None).exists():
                 return RestResponse(status=status.HTTP_400_BAD_REQUEST, message="Món ăn không tồn tại trong combo!").response
 
-            obj.dishes.filter(dish=pk_dish, deleted_at=None).update(quantity=serializer.validated_data['quantity'])
+            obj.combo_dishes.filter(dish=pk_dish, deleted_at=None).update(quantity=serializer.validated_data['quantity'])
             return RestResponse(status=status.HTTP_200_OK, data=ComboSerializer(obj).data).response
         except Combo.DoesNotExist:
             return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy combo!").response
@@ -155,13 +155,13 @@ class ComboView(viewsets.ViewSet):
             logging.getLogger().exception("ComboView.update_dish exc=%s, pk=%s, req=%s", e, pk, request.data)
             return RestResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data={"error": str(e)}).response
 
-    @action(detail=True, methods=['DELETE'], parser_classes=(JSONParser, ), url_path='dish/(?P<pk_dish>\d+)')
+    @action(detail=True, methods=['DELETE'], parser_classes=(JSONParser, ), url_path=r'dish/(?P<pk_dish>\d+)')
     def delete_dish(self, request, pk=None, pk_dish=None):
         try:
             logging.getLogger().info("ComboView.delete_dish pk=%s, req=%s", pk, request.data)
             combo : Combo = Combo.objects.get(pk=pk, deleted_at=None)
             dish : Dish = Dish.objects.get(pk=pk_dish, deleted_at=None)
-            combo.dishes.filter(dish=dish, deleted_at=None).delete()
+            combo.combo_dishes.filter(dish=dish, deleted_at=None).delete()
             return RestResponse(status=status.HTTP_200_OK, data=ComboSerializer(combo).data).response
         except Dish.DoesNotExist:
             return RestResponse(status=status.HTTP_404_NOT_FOUND, message="Không tìm thấy món ăn!").response

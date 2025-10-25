@@ -9,8 +9,8 @@ class ComboDish(models.Model):
         db_table = "combo_dishes"
 
     id = models.AutoField(primary_key=True)
-    combo = models.ForeignKey(Combo, on_delete=models.CASCADE, related_name="dishes")
-    dish = models.ForeignKey(Dish, on_delete=models.CASCADE, related_name="combos")
+    combo = models.ForeignKey(Combo, on_delete=models.CASCADE, related_name="combo_dishes")
+    dish = models.ForeignKey(Dish, on_delete=models.CASCADE, related_name="combo_dishes")
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
