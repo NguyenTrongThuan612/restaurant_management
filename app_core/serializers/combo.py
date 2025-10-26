@@ -14,10 +14,13 @@ class ComboDishSerializer(serializers.ModelSerializer):
 
 class ComboSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
-    dishes = ComboDishSerializer(many=True, read_only=True)
+    dishes = serializers.SerializerMethodField()
 
     def get_image(self, obj):
         return obj.get_image()
+
+    def get_dishes(self, obj):
+        return ComboDishSerializer(obj.combo_dishes, many=True).data
 
     class Meta:
         model = Combo
