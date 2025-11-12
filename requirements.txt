@@ -13,6 +13,5 @@ logtail-python
 pandas
 openpyxl
 uvicorn
-mysqlclient
+PyMySQL
 Pillow
-psycopg[binary]
