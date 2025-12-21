@@ -21,7 +21,7 @@ class UserView(viewsets.ViewSet):
     authentication_classes = (UserAuthentication, )
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create']:
+        if self.action in ['create']:
             return [IsManager()]
         return []
 
@@ -86,7 +86,7 @@ class UserView(viewsets.ViewSet):
 
             paginator = CustomPageNumberPagination()
             users = paginator.paginate_queryset(users, request)
-
+            
             serializer = UserSerializer(users, many=True)
             return RestResponse(status=status.HTTP_200_OK, data=paginator.get_paginated_data(serializer.data)).response
         except Exception as e:
