@@ -19,3 +19,7 @@ class Combo(models.Model):
 
     def get_image(self):
         return f"{settings.APP_DOMAIN}{self.image.url}"
+    
+    @property
+    def price(self):
+        return sum(combo_dish.dish.price * combo_dish.quantity for combo_dish in self.combo_dishes.filter(deleted_at=None)) - self.discount
