@@ -150,3 +150,15 @@ INSERT INTO `users` (`password`, `last_login`, `id`, `employee_code`, `fullname`
 ('pbkdf2_sha256$1000000$0x4S2TbXJHwWX0E6HQSJ6M$c1HZOXje0J4WzFJqPhyL9qvwlEgssatiGfJXQ+O6xmw=',	NULL,	1,	'NV00001',	'Quản lý',	'2025-11-12',	'male',	'manager@rms.com',	'string',	'activated',	'manager',	'2025-11-12 14:46:08.573944',	'2025-11-12 14:46:08.574784');
 
 -- 2025-11-12 14:48:15 UTC
+
+DROP TABLE IF EXISTS `daily_quantities`;
+CREATE TABLE daily_quantities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    `date` DATE NOT NULL,
+    `type` VARCHAR(20) NOT NULL,
+    dish_id INT NULL,
+    combo_id INT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)
