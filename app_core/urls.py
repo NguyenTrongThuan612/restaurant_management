@@ -11,6 +11,7 @@ from app_core.views.order import OrderView
 from app_core.views.order_item import OrderItemView
 from app_core.views.bill import BillView
 from app_core.views.statistical import StatisticalView
+from app_core.views.daily_quantity import DailyQuantityView
 
 router = DefaultRouter(trailing_slash=False)
 router.register('users', UserView, basename='user')
@@ -22,6 +23,7 @@ router.register('orders', OrderView, basename='order')
 router.register('order-items', OrderItemView, basename='order-item')
 router.register('bills', BillView, basename='bill')
 router.register('statistical', StatisticalView, basename='statistical')
+router.register('daily-quantities', DailyQuantityView, basename='daily-quantity')
 
 urlpatterns = [
     path('health/', HealthCheckView.as_view(), name='health-check'),
